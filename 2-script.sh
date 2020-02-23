@@ -7,7 +7,7 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 
 # Drive Setup
-echo "${bold}Setting up first drive"
+echo "${bold}Setting up first drive${normal}"
 parted -a optimal --script /dev/nvme0n1 \
     mklabel gpt \
     mkpart primary 1MiB 257MiB \
@@ -23,7 +23,7 @@ lsblk
 read -p "Check if first drive is correct?"
 clear
 
-echo "${bold}Setting up second drive"
+echo "${bold}Setting up second drive${normal}"
 parted -a optimal --script /dev/nvme1n1 \
     mklabel gpt \
     mkpart primary 1MiB 100% \
@@ -37,20 +37,20 @@ clear
 # Creating LVM
 
 ## Physical Devices
-echo "${bold}Setting up Physical Devices for LVM..."
+echo "${bold}Setting up Physical Devices for LVM...${normal}"
 pvcreate /dev/nvme0n1p3
 pvcreate /dev/nvme1n1p1
 pvdisplay
 read -p "Check Physical Devices?"
 
 ## Volume Group
-echo "${bold}Setting up Volume Group for LVM..."
+echo "${bold}Setting up Volume Group for LVM...${normal}"
 vgcreate gentoo /dev/nvme0n1p3 /dev/nvme1n1p1
 vgdisplay
 read -p "Check Volume Group?"
 
 ## Logical Volume
-echo "${bold}Setting up Logical Volumes for LVM..."
+echo "${bold}Setting up Logical Volumes for LVM...${normal}"
 lvcreate -n tmp -L 5G gentoo
 lvcreate -n varlog -L 5G gentoo
 lvcreate -n root -l100%FREE gentoo
@@ -59,41 +59,41 @@ read -p "Check Logical Volume?"
 clear
 
 # Filesystem
-echo "${bold}Setting Filesystem fat for boot partition"
+echo "${bold}Setting Filesystem fat for boot partition${normal}"
 mkfs.fat -F 32 /dev/nvme0n1p1
-echo "${bold}Setting Filesystem ext4 for efi partition"
+echo "${bold}Setting Filesystem ext4 for efi partition${normal}"
 mkfs.ext4 -L boot /dev/nvme0n1p2
-clear
 read -p "Press enter to continue"
+clear
 
-echo "${bold}Setting Filesystem btrfs for root"
+echo "${bold}Setting Filesystem btrfs for root${normal}"
 mkfs.btrfs -L root /dev/mapper/gentoo-root
-echo "${bold}Setting Filesystem btrfs for varlog"
+echo "${bold}Setting Filesystem btrfs for varlog${normal}"
 mkfs.btrfs -L varlog /dev/mapper/gentoo-varlog
-echo "${bold}Setting Filesystem btrfs for tmp"
+echo "${bold}Setting Filesystem btrfs for tmp${normal}"
 mkfs.btrfs -L tmp /dev/mapper/gentoo-tmp
 
 read -p "Press enter to continue"
 clear
 
 # Mount Filesystem
-echo "${bold}Mounting gentoo-root to /mnt/gentoo"
+echo "${bold}Mounting gentoo-root to /mnt/gentoo${normal}"
 mount /dev/mapper/gentoo-root /mnt/gentoo
-echo "${bold}Creating Directories for mount"
+echo "${bold}Creating Directories for mount${normal}"
 mkdir -p /mnt/gentoo/{tmp,var/log}
-echo "${bold}Mounting gentoo-tmp to /mnt/gentoo/tmp"
+echo "${bold}Mounting gentoo-tmp to /mnt/gentoo/tmp${normal}"
 mount /dev/mapper/gentoo-tmp /mnt/gentoo/tmp
-echo "${bold}Mounting gentoo-varlog to /mnt/gentoo/var/log"
+echo "${bold}Mounting gentoo-varlog to /mnt/gentoo/var/log${normal}"
 mount /dev/mapper/gentoo-varlog /mnt/gentoo/var/log
 
 lsblk
-
 read -p "Check mount?"
 clear
 
-echo "${bold}Current Date:"
+echo "${bold}Current Date:${normal}"
 date
 read -p "Is the date correct?"
 
 echo "${bold}Updating the time"
 ntpd -q -g
+
