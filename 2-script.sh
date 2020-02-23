@@ -6,8 +6,21 @@
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+clear
+echo "${bold}Listing nvme drives${normal}"
+nvme list
+
+read -p "Continue?"
+
+echo "${bold}Formatting /dev/nvme0n1${normal}"
+nvme format -s1 /dev/nvme0n1
+echo "${bold}Formatting /dev/nvme1n1${normal}"
+nvme format -s1 /dev/nvme1n1
+
+read -p "Press enter to continue"
+
 # Drive Setup
-echo "${bold}Setting up first drive${normal}"
+echo "${bold}Setting up /dev/nvme0n1${normal}"
 parted -a optimal --script /dev/nvme0n1 \
     mklabel gpt \
     mkpart primary 1MiB 257MiB \
@@ -20,18 +33,16 @@ parted -a optimal --script /dev/nvme0n1 \
     name 3 gentoo \
     set 3 lvm on
 lsblk
-read -p "Check if first drive is correct?"
-clear
+read -p "Check if /dev/nvme0n1 is correct?"
 
-echo "${bold}Setting up second drive${normal}"
+echo "${bold}Setting up /dev/nvme1n1${normal}"
 parted -a optimal --script /dev/nvme1n1 \
     mklabel gpt \
     mkpart primary 1MiB 100% \
     name 1 gentoo \
     set 1 lvm on
-    
 lsblk
-read -p "Check if second drive is correct?"
+read -p "Check if /dev/nvme1n1 is correct?"
 clear
 
 # Creating LVM
@@ -42,12 +53,14 @@ pvcreate /dev/nvme0n1p3
 pvcreate /dev/nvme1n1p1
 pvdisplay
 read -p "Check Physical Devices?"
+clear
 
 ## Volume Group
 echo "${bold}Setting up Volume Group for LVM...${normal}"
 vgcreate gentoo /dev/nvme0n1p3 /dev/nvme1n1p1
 vgdisplay
 read -p "Check Volume Group?"
+clear
 
 ## Logical Volume
 echo "${bold}Setting up Logical Volumes for LVM...${normal}"
@@ -72,7 +85,6 @@ echo "${bold}Setting Filesystem btrfs for varlog${normal}"
 mkfs.btrfs -L varlog /dev/mapper/gentoo-varlog
 echo "${bold}Setting Filesystem btrfs for tmp${normal}"
 mkfs.btrfs -L tmp /dev/mapper/gentoo-tmp
-
 read -p "Press enter to continue"
 clear
 
@@ -96,4 +108,6 @@ read -p "Is the date correct?"
 
 echo "${bold}Updating the time"
 ntpd -q -g
+read -p "Continue?"
 
+echo "${bold}Installing Stage 3"
