@@ -1,2 +1,3 @@
 # Gentoo-Install
-Install Gentoo
+
+An Install Script that installs gentoo properly
