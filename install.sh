@@ -6,8 +6,12 @@
 bold=$(tput bold)
 normal=$(tput sgr0)
 
+# VARIABLES
+URL_TAR="wget https://mirror.sjc02.svwh.net/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened/stage3-amd64-hardened-20200301T214502Z.tar.xz"
+URL_TAR_INT="$URL_TAR.DIGESTS.asc"
+
 # Check Internet
-if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
+if ping -q -c 1 -W 1 1.1.1.1 >/dev/null; then
     # Clear the window
     clear
     
@@ -24,8 +28,13 @@ if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
     echo "${bold}Formatting /dev/nvme1n1${normal}"
     nvme format -s1 /dev/nvme1n1
     
+    ## Check Drive
+    echo "${bold}Check if drive has formatted properly${normal}"
+    lsblk
+    
     # Continue Operator
     read -p "Press enter to continue"
+    clear
 
     # Drives Setup
     
@@ -123,9 +132,32 @@ if ping -q -c 1 -W 1 8.8.8.8 >/dev/null; then
     echo "${bold}Updating the time${normal}"
     ntpd -q -g
     read -p "Continue?"
-
-    # Stage 3 Tar Ball
-    echo "${bold}Installing Stage 3${normal}"
     
+    # Integrity Import
+    echo "${bold}Importing GPG Key for integrity check${normal}"
+    wget -O- https://gentoo.org/.well-known/openpgpkey/hu/wtktzo4gyuhzu8a4z5fdj3fgmr1u6tob?l=releng | gpg --import
+    clear
+    
+    # Stage 3 Tar Ball
+    wget "$URL_TAR" 2>&1 | stdbuf -o0 awk '/[.] +[0-9][0-9]?[0-9]?%/ { print substr($0,63,3) }' | dialog --title "Download Stage3" --gauge "Download Stage3 Harden" 10 100
+    wget "$URL_TAR_INT" 2>&1 | stdbuf -o0 awk '/[.] +[0-9][0-9]?[0-9]?%/ { print substr($0,63,3) }' | dialog --title "Download Stage3" --gauge "Download Stage3 Harden DIGIST" 10 100
+    clear
+    
+    # DIGEST File Verify
+    echo "${bold}File Integrity Check${normal}"
+    gpg --verify stage3-amd64-hardened-20200301T214502Z.tar.xz.DIGESTS.asc
+    read -p "Correct?"
+    clear
+    
+    ## File Verify
+    echo "${bold}CHECKSUM:${normal}"
+    grep -B 1 -i sha512 stage3-amd64-hardened-20200301T214502Z.tar.xz.DIGESTS.asc
+    echo "${bold}FILE CHECKSUM:${normal}"
+    echo "# SHA512 HASH"
+    sha512sum stage3-amd64-hardened-20200301T214502Z.tar.xz
+    echo "# WHIRLPOOL HASH"
+    openssl dgst -r -whirlpool stage3-amd64-hardened-20200301T214502Z.tar.xz
+    read -p "Correct?"
 else
     echo "${bold}Internet not setup${normal}"
+fi
