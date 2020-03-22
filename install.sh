@@ -10,6 +10,9 @@ normal=$(tput sgr0)
 URL_TAR="wget https://mirror.sjc02.svwh.net/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened/stage3-amd64-hardened-20200301T214502Z.tar.xz"
 URL_TAR_INT="$URL_TAR.DIGESTS.asc"
 
+TAR="stage3-amd64-hardened-20200301T214502Z.tar.xz"
+TAR_INT="$TAR.DIGESTS.asc"
+
 # Check Internet
 if ping -q -c 1 -W 1 1.1.1.1 >/dev/null; then
     # Clear the window
@@ -145,18 +148,18 @@ if ping -q -c 1 -W 1 1.1.1.1 >/dev/null; then
     
     # DIGEST File Verify
     echo "${bold}File Integrity Check${normal}"
-    gpg --verify stage3-amd64-hardened-20200301T214502Z.tar.xz.DIGESTS.asc
+    gpg --verify $TAR_INT
     read -p "Correct?"
     clear
     
     ## File Verify
     echo "${bold}CHECKSUM:${normal}"
-    grep -B 1 -i sha512 stage3-amd64-hardened-20200301T214502Z.tar.xz.DIGESTS.asc
+    grep -B 1 -i sha512 $TAR_INT
     echo "${bold}FILE CHECKSUM:${normal}"
     echo "# SHA512 HASH"
-    sha512sum stage3-amd64-hardened-20200301T214502Z.tar.xz
+    sha512sum $TAR
     echo "# WHIRLPOOL HASH"
-    openssl dgst -r -whirlpool stage3-amd64-hardened-20200301T214502Z.tar.xz
+    openssl dgst -r -whirlpool $TAR
     read -p "Correct?"
 else
     echo "${bold}Internet not setup${normal}"
