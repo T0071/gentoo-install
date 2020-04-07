@@ -7,7 +7,7 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 
 # VARIABLES
-URL_TAR="wget https://mirror.sjc02.svwh.net/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened/stage3-amd64-hardened-20200301T214502Z.tar.xz"
+URL_TAR="https://mirror.sjc02.svwh.net/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened/stage3-amd64-hardened-20200301T214502Z.tar.xz"
 URL_TAR_INT="$URL_TAR.DIGESTS.asc"
 
 TAR="stage3-amd64-hardened-20200301T214502Z.tar.xz"
