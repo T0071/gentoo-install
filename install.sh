@@ -7,10 +7,10 @@ bold=$(tput bold)
 normal=$(tput sgr0)
 
 # VARIABLES
-URL_TAR="https://mirror.sjc02.svwh.net/gentoo/releases/amd64/autobuilds/current-stage3-amd64-hardened/stage3-amd64-hardened-20200301T214502Z.tar.xz"
+URL_TAR="https://gentoo.ussg.indiana.edu//releases/amd64/autobuilds/current-stage3-amd64-hardened/stage3-amd64-hardened-20200401T214502Z.tar.xz"
 URL_TAR_INT="$URL_TAR.DIGESTS.asc"
 
-TAR="stage3-amd64-hardened-20200301T214502Z.tar.xz"
+TAR="stage3-amd64-hardened-20200401T214502Z.tar.xz"
 TAR_INT="$TAR.DIGESTS.asc"
 
 # Check Internet
@@ -136,15 +136,27 @@ if ping -q -c 1 -W 1 1.1.1.1 >/dev/null; then
     ntpd -q -g
     read -p "Continue?"
     
+    # Change directory
+    echo "${bold}Changing Directories"
+    echo "from $(pwd) ->"
+    cd /mnt/gentoo/
+    echo "$(pwd)"
+    
     # Integrity Import
     echo "${bold}Importing GPG Key for integrity check${normal}"
     wget -O- https://gentoo.org/.well-known/openpgpkey/hu/wtktzo4gyuhzu8a4z5fdj3fgmr1u6tob?l=releng | gpg --import
     clear
     
     # Stage 3 Tar Ball
-    wget "$URL_TAR" 2>&1 | stdbuf -o0 awk '/[.] +[0-9][0-9]?[0-9]?%/ { print substr($0,63,3) }' | dialog --title "Download Stage3" --gauge "Download Stage3 Harden" 10 100
-    wget "$URL_TAR_INT" 2>&1 | stdbuf -o0 awk '/[.] +[0-9][0-9]?[0-9]?%/ { print substr($0,63,3) }' | dialog --title "Download Stage3" --gauge "Download Stage3 Harden DIGIST" 10 100
+    wget $URL_TAR 2>&1 | stdbuf -o0 awk '/[.] +[0-9][0-9]?[0-9]?%/ { print substr($0,63,3) }' | dialog --title "Download Stage3" --gauge "Download Stage3 Harden" 10 100
+    wget $URL_TAR_INT 2>&1 | stdbuf -o0 awk '/[.] +[0-9][0-9]?[0-9]?%/ { print substr($0,63,3) }' | dialog --title "Download Stage3" --gauge "Download Stage3 Harden DIGIST" 10 100
     clear
+    
+    # Check file existance
+    echo "${bold}Checking file existance${normal}"
+    echo "File directory: $(pwd)"
+    ls -la
+    read "Correct?"
     
     # DIGEST File Verify
     echo "${bold}File Integrity Check${normal}"
@@ -161,6 +173,19 @@ if ping -q -c 1 -W 1 1.1.1.1 >/dev/null; then
     echo "# WHIRLPOOL HASH"
     openssl dgst -r -whirlpool $TAR
     read -p "Correct?"
+    
+    # Unpack Stage 3
+    tar xpvf $TAR --xattrs-include='*.* --numeric-owner'
+    
+    # Edit compile options
+    echo "${bold}Edit Compile Config File${normal}"
+    read "READY?"
+    nano -w /mnt/gentoo/etc/portage/make.conf
+    clear
+    
+    ## Select mirrors
+    echo "${bold}Select mirror${normal}"
+    mirrorselect -i -o >> /mnt/gentoo/etc/portage/make.conf
 else
     echo "${bold}Internet not setup${normal}"
 fi
