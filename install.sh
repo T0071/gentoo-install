@@ -182,10 +182,48 @@ if ping -q -c 1 -W 1 1.1.1.1 >/dev/null; then
     read "READY?"
     nano -w /mnt/gentoo/etc/portage/make.conf
     clear
+    echo "${bold}Checking compile file${normal}"
+    echo "/mnt/gentoo/etc/portage/make.conf :"
+    cat /mnt/gentoo/etc/portage/make.conf
+    read -p "Correct?"
+    clear
     
     ## Select mirrors
     echo "${bold}Select mirror${normal}"
     mirrorselect -i -o >> /mnt/gentoo/etc/portage/make.conf
+    echo "${bold}Checking mirror addition to compile file${normal}"
+    cat /mnt/gentoo/etc/portage/make.conf
+    read -p "Correct?"
+    clear
+    
+    # Gentoo ebuild repo
+    echo "${bold}Making repos.conf in portage directory${normal}"
+    mkdir --parents /mnt/gentoo/etc/portage/repos.conf
+    echo "${bold}Copying default to portage compile${normal}"
+    cp /mnt/gentoo/usr/share/portage/config/repos.conf /mnt/gentoo/etc/portage/repos.conf/gentoo.conf
+    echo "${bold}Checking if everything moved correctly${normal}"
+    ls -la /mnt/gentoo/etc/portage/repos.conf/gentoo.conf
+    read -p "Correct?"
+    clear
+    
+    # Copy DNS info
+    echo "${bold}Copy DNS info${normal}"
+    cp --dereference /etc/resolv.conf /mnt/gentoo/etc/
+    read -p "Continue?"
+    clear
+    
+    # Mounting the necessary filesystem
+    echo "${bold}Mounting the necessary filesystem${normal}"
+    mount --types proc /proc /mnt/gentoo/proc
+    mount --rbind /sys /mnt/gentoo/sys
+    mount --make-rslave /mnt/gentoo/sys
+    mount --rbind /dev /mnt/gentoo/dev
+    mount --make-rslave /mnt/gentoo/dev
+    
+    # Enter New Enviorment
+    chroot /mnt/gentoo /bin/bash
+    source /etc/profile
+    export PS1="(chroot) ${PS1}"
 else
     echo "${bold}Internet not setup${normal}"
 fi
